@@ -33,6 +33,13 @@ Escape::
 }
 Return
 
+FindImagesAndClick(params*) {
+	aux := 0
+ 	for index, param in params
+	 	aux := aux + FindImageAndClick(param)
+	return aux
+}
+
 FindImageAndClick(img)
 {	
 	path = %A_WorkingDir%\images\%img%.bmp
@@ -56,7 +63,7 @@ FindImageAndClick(img)
 	else
 	{		
 		; MouseMove -200, 0, 100, R
-		MouseMove 80, 80, 20
+		; MouseMove 80, 80, 20
 		Return 0
 	}
 	
@@ -66,26 +73,137 @@ FindImageAndClick(img)
 ^t::
 {
 	g_stop := 0
-	Send z
-	CompleteAllTask()	
-
-	if (g_stop = 0){
-		Send z
-		CompleteAllTask()	
-	}
-
-	if (g_stop = 0){
-		Send z
-		CompleteAllTask()	
-	}
+	LoopCompleteAllTask()
 }
 Return
 
+#IfWinActive, Vikings: War
+^3::
+{
+	g_stop := 0
+	LoopCompleteAllPremiumTask()
+}
+Return
+
+#IfWinActive, Vikings: War
+^2::
+{
+	g_stop := 0
+	LoopCompleteAllClanTask()
+}
+Return
+
+
+#IfWinActive, Vikings: War
+^1::
+{
+	g_stop := 0
+	LoopCompleteAllPersonalTask()	
+}
+Return
+
+LoopCompleteAllTask() {	
+	local loopCnt := 0
+	loop {
+		OpenTasks()
+		CompleteAllTask()
+		loopCnt := loopCnt + 1
+		
+		if (g_stop = 1) {
+			Break
+		}
+
+		if (loopCnt >= 3) {
+			Break
+		}		
+	}
+}
+
+LoopCompleteAllPersonalTask() {	
+	local loopCnt := 0
+	loop {
+		CompleteAllPersonalTask()
+		loopCnt := loopCnt + 1
+		
+		if (g_stop = 1) {
+			Break
+		}
+
+		if (loopCnt >= 3) {
+			Break
+		}		
+	}
+}
+
+CompleteAllPersonalTask() {	
+	if (g_stop = 0){
+		OpenTasks()
+		; FindImagesAndClick("tasks-personal", "tasks-personal-inactive")
+		; FindImagesAndClick("tasks-personal", "tasks-personal-inactive")
+		FindImageAndClick("tasks-personal")
+		FindImageAndClick("tasks-personal-inactive")
+		CompleteAllTask()
+	}
+}
+
+LoopCompleteAllClanTask() {	
+	local loopCnt := 0
+	loop {
+		CompleteAllClanTask()	
+		loopCnt := loopCnt + 1
+		
+		if (g_stop = 1) {
+			Break
+		}
+
+		if (loopCnt >= 3) {
+			Break
+		}		
+	}	
+}
+
+CompleteAllClanTask() {	
+	if (g_stop = 0){
+		OpenTasks()		
+		; FindImagesAndClick("tasks-clan", "tasks-clan-inactive")
+		; FindImagesAndClick("tasks-clan", "tasks-clan-inactive")
+		FindImageAndClick("tasks-clan")
+		FindImageAndClick("tasks-clan-inactive")
+		CompleteAllTask()
+	}
+}
+
+LoopCompleteAllPremiumTask() {	
+	local loopCnt := 0
+	loop {
+		CompleteAllPersonalTask()	
+		loopCnt := loopCnt + 1
+		
+		if (g_stop = 1) {
+			Break
+		}
+
+		if (loopCnt >= 3) {
+			Break
+		}		
+	}
+}
+
+CompleteAllPremiumTask() {	
+	if (g_stop = 0){
+		OpenTasks()
+		FindImagesAndClick("tasks-premium", "tasks-premium-inactive")
+		FindImagesAndClick("tasks-premium", "tasks-premium-inactive")
+		CompleteAllTask()
+	}
+}
+
 CompleteAllTask() {	
 	if (g_stop = 0){
+		; WinActivate Vikings: War
 		Loop
 		{
-			MouseMove 0, 0, %g_sleep%
+			MouseMove 200, 100, %g_sleep%
 			ActionCount := 0	
 			
 			ActionCount := ActionCount + FindImageAndClick("apply")				
@@ -118,4 +236,10 @@ CompleteTask() {
 	}
 
 	return ActionCount
+}
+
+OpenTasks() {
+	WinActivate Vikings: War
+	Send z
+	Sleep 500
 }

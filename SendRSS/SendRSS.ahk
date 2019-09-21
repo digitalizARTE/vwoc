@@ -12,7 +12,7 @@
 
 global g_rssPerMarch := 999999999
 ; global g_delayBetweenMarches := 5000
-global g_delayBetweenMarches := 6000
+global g_delayBetweenMarches := 23 * 2 * 1000 / 7 * 1.15
 
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
@@ -26,6 +26,12 @@ Global g_ScreenHeight := 900 ; A_ScreenHeight
 global g_sleep := 100
 
 global g_stop := 0
+
+global g_resource_food := 1
+global g_resource_lumber := 2
+global g_resource_iron := 3
+global g_resource_stone := 4
+global g_resource_silver := 5
 
 WinActivate Vikings: War
 
@@ -67,7 +73,7 @@ Return
 	TrayTip, Send Rss, Send Food
 	g_stop := 0
 	WinActivate Vikings: War
-	SendRSS(1) 
+	SendRSS(g_resource_food) 
 }
 Return
 
@@ -77,7 +83,7 @@ Return
 	TrayTip, Send Rss, Send Lumber
 	g_stop := 0
 	WinActivate Vikings: War
-	SendRSS(2) 
+	SendRSS(g_resource_lumber) 
 }
 Return
 
@@ -87,7 +93,7 @@ Return
 	TrayTip, Send Rss, Send Iron
 	g_stop := 0
 	WinActivate Vikings: War
-	SendRSS(3) 
+	SendRSS(g_resource_iron) 
 }
 Return
 
@@ -97,7 +103,7 @@ Return
 	TrayTip, Send Rss, Send Stone
 	g_stop := 0
 	WinActivate Vikings: War
-	SendRSS(4) 
+	SendRSS(g_resource_stone) 
 }
 Return
 
@@ -107,7 +113,41 @@ Return
 	TrayTip, Send Rss, Send Silver
 	g_stop := 0
 	WinActivate Vikings: War
-	SendRSS(5) 
+	SendRSS(g_resource_silver) 
+}
+Return
+
+#IfWinActive, Vikings: War of Clans
+^a::
+{	
+	TrayTip, Send Rss, Send Food
+	g_stop := 0
+	WinActivate Vikings: War
+	SendRSS(g_resource_food) 
+
+	if ( g_stop = 0){
+		TrayTip, Send Rss, Send Lumber
+		WinActivate Vikings: War
+		SendRSS(g_resource_lumber) 
+	}
+
+	if ( g_stop = 0){
+		TrayTip, Send Rss, Send Iron
+		WinActivate Vikings: War
+		SendRSS(g_resource_iron) 
+	}
+
+	if ( g_stop = 0){
+		TrayTip, Send Rss, Send Stone
+		WinActivate Vikings: War
+		SendRSS(g_resource_stone) 
+	}
+
+	if ( g_stop = 0){
+		TrayTip, Send Rss, Send Silver
+		WinActivate Vikings: War
+		SendRSS(g_resource_silver) 
+	}
 }
 Return
 
@@ -116,11 +156,15 @@ SendRSS(resource) {
 	CoordMode, Mouse, Screen
 	img := GetResourceName(resource)
 
-	if (resource>2)
+	if (resource>g_resource_lumber)
 	{
 		path = %A_WorkingDir%\images\sendAnchor.bmp
 		ImageSearch, sendAnchorX, sendAnchorY, 0,0, g_ScreenWidth, g_ScreenHeight, *75 %path%
 		
+		MouseMove, sendAnchorX-100, sendAnchorY-100, 50		
+		Click WheelDown
+		Sleep 250
+
 		MouseMove, sendAnchorX-100, sendAnchorY-100, 50		
 		Click WheelDown
 		Sleep 250
@@ -220,23 +264,23 @@ SendRSS(resource) {
 GetResourceName(resource) {
 	name := ""
 	
-	if (resource=1)
+	if (resource=g_resource_food)
 	{
 		name := "food"		
 	}
-	else if (resource=2)
+	else if (resource=g_resource_lumber)
 	{
 		name := "lumber"		
 	}
-	else if (resource=3)
+	else if (resource=g_resource_iron)
 	{
 		name := "iron"		
 	}
-	else if (resource=4)
+	else if (resource=g_resource_stone)
 	{
 		name := "stone"		
 	}
-	else if (resource=5)
+	else if (resource=g_resource_silver)
 	{
 		name := "silver"		
 	}
