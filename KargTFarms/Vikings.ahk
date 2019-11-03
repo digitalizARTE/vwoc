@@ -13,12 +13,42 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 global g_numTasks := 15
 
+global g_sleep := 100
+
+global g_stop := 0
+
+WinActivate Vikings: War
+
 Maximize() 
+
+#IfWinActive, Vikings: War
+^Escape::
+{
+	ExitApp
+}
+Return
 
 #IfWinActive, Vikings: War
 Escape::
 {
-	ExitApp
+	g_stop := 1
+}
+Return
+
+#IfWinActive, Vikings: War
+^1::
+{
+	g_stop := 0
+	Send z
+	Sleep %g_sleep%
+	CompleteAllTask()
+}
+Return
+
+#IfWinActive, Vikings: War
+^t::
+{
+	CompleteTask()
 }
 Return
 
@@ -26,27 +56,31 @@ FindImageAndClick(img, FixX:=0, FixY:=0)
 {	
 	path = %A_WorkingDir%\images\%img%.bmp
 	
-	; Random, OutputVar, Min, Max
-	MouseMove 200, 0, 20, R
-	Sleep 100
-
-	ImageSearch, FoundX, FoundY, 0,0, 1600, 900, *75 %path%
+	; MouseMove 200, -200, 20, R
+	MouseMove 200, 100, 20
+	Sleep %g_sleep%
+	
+	WinGetPos waX, way, waWidth, waHeight
+	ImageSearch, FoundX, FoundY, 0, 0, %waWidth%, %waHeight%, *75 %path%
 
 	if (FoundX>0)
 	{
 		HitX := FoundX + FixX
 		HitY := FoundY + FixY
 		MouseMove HitX, HitY
-		Sleep 200
+		Sleep %g_sleep%
+		; MouseClick, left, FoundX, FoundY		
 		Click HitX, HitY
-		Sleep 100
+		Sleep %g_sleep%
 		Return 1
 	}
 	else
 	{		
-		MouseMove -200, 0, 100, R
+		; MouseMove -200, 0, 100, R
+		; MouseMove 80, 80, 20
 		Return 0
-	}	
+	}
+	
 }
 
 NotifyUser(msg)
@@ -65,44 +99,58 @@ Maximize() {
 	NotifyUser("Maximize")	
 	Activate()
 	Sleep 500
-	CloseNotify()
+	; CloseNotify()
 	Sleep 500
 	FindImageAndClick("max", 8, 8)
 }
 
-CompleteTask() {	
-	NotifyUser("Complete task")	
-	Loop
-	{
-		ActionCount := 0		
-		ActionCount := ActionCount + FindImageAndClick("apply")
-
-		Loop, %g_numTasks%
+CompleteTask() {
+	if (g_stop = 0){
+		NotifyUser("Complete task")
+		Activate()	
+		Loop
 		{
-			ActionCount := ActionCount + FindImageAndClick("start")
-			ActionCount := ActionCount + FindImageAndClick("claim")
-		}
+			ActionCount := 0		
+			ActionCount := ActionCount + FindImageAndClick("apply")
 
-		if (ActionCount=0)
-			break
+			Loop, %g_numTasks%
+			{
+				ActionCount := ActionCount + FindImageAndClick("start")
+				ActionCount := ActionCount + FindImageAndClick("claim")
+			}
+
+			if (ActionCount=0) {
+				break
+			}
+
+			if ( g_stop = 1){
+				break
+			}
+		}
 	}
 }
 
-CompleteAllTask() {	
-	NotifyUser("Complete task")	
-	aux := FindImagesAndClick("tasks-personal", "tasks-personal-inactive")
-	if(aux> 0){
-		CompleteTask()
+CompleteAllTask() {
+	if (g_stop = 0){	
+		NotifyUser("Complete task")	
+		aux := FindImagesAndClick("tasks-personal", "tasks-personal-inactive")
+		if(aux> 0){
+			CompleteTask()
+		}
 	}
 	
-	aux := FindImagesAndClick("tasks-clan", "tasks-clan-inactive")
-	if(aux> 0){
-		CompleteTask()
+	if (g_stop = 0){	
+		aux := FindImagesAndClick("tasks-clan", "tasks-clan-inactive")
+		if(aux> 0){
+			CompleteTask()
+		}
 	}
 	
-	aux := FindImagesAndClick("tasks-premiun", "tasks-premiun-inactive")
-	if(aux> 0){
-		CompleteTask()
+	if (g_stop = 0){	
+		aux := FindImagesAndClick("tasks-premiun", "tasks-premiun-inactive")
+		if(aux> 0){
+			CompleteTask()
+		}
 	}
 }
 
@@ -114,23 +162,10 @@ FindImagesAndClick(params*) {
 }
 
 CloseNotify() {
-	FindImageAndClick("close")
-	FindImageAndClick("close")
-	FindImageAndClick("close2")
-	FindImageAndClick("close2")
+	if (g_stop = 0){
+		FindImageAndClick("close")
+		FindImageAndClick("close")
+		FindImageAndClick("close2")
+		FindImageAndClick("close2")
+	}
 }
-
-#IfWinActive, Vikings: War
-^1::
-{
-	Send z
-	CompleteAllTask()
-}
-Return
-
-#IfWinActive, Vikings: War
-^t::
-{
-	CompleteTask()
-}
-Return

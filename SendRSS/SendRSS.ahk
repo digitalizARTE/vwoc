@@ -12,7 +12,7 @@
 
 global g_rssPerMarch := 999999999
 ; global g_delayBetweenMarches := 5000
-global g_delayBetweenMarches := 23 * 2 * 1000 / 7 * 1.15
+global g_delayBetweenMarches := 33 * 2 * 1000 / 7 * 1.15
 
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
@@ -123,37 +123,37 @@ Return
 	TrayTip, Send Rss, Send Food
 	g_stop := 0
 	WinActivate Vikings: War
-	SendRSS(g_resource_food) 
+	SendRSS(g_resource_food, False) 
 
 	if ( g_stop = 0){
 		TrayTip, Send Rss, Send Lumber
 		WinActivate Vikings: War
-		SendRSS(g_resource_lumber) 
+		SendRSS(g_resource_lumber, False)  
 	}
 
 	if ( g_stop = 0){
 		TrayTip, Send Rss, Send Iron
 		WinActivate Vikings: War
-		SendRSS(g_resource_iron) 
+		SendRSS(g_resource_iron, False) 
 	}
 
 	if ( g_stop = 0){
 		TrayTip, Send Rss, Send Stone
 		WinActivate Vikings: War
-		SendRSS(g_resource_stone) 
+		SendRSS(g_resource_stone, False) 
 	}
 
 	if ( g_stop = 0){
 		TrayTip, Send Rss, Send Silver
 		WinActivate Vikings: War
-		SendRSS(g_resource_silver) 
+		SendRSS(g_resource_silver, False)  
 	}
 }
 Return
 
-SendRSS(resource) {
-	CoordMode, Pixel, Screen
-	CoordMode, Mouse, Screen
+SendRSS(resource, showMessages:=True) {
+	; CoordMode, Pixel, Screen
+	; CoordMode, Mouse, Screen
 	img := GetResourceName(resource)
 
 	if (resource>g_resource_lumber)
@@ -245,19 +245,27 @@ SendRSS(resource) {
 					}
 					Else
 					{
-						MsgBox Couldn't find close button.
+						if( showMessages = True ) {
+							MsgBox Couldn't find close button.
+						}
+
 						break
 					}
 				}
 			}
 			else
 			{
-				MsgBox Couldn't find send button.
+				if( showMessages = True ) {
+					MsgBox Couldn't find send button.
+				}
+
 				break
 			}
 		}
 	} else {
-		MsgBox No se encontro el recurso
+		if( showMessages = True ) {
+			MsgBox No se encontro el recurso
+		}
 	}		
 }
 

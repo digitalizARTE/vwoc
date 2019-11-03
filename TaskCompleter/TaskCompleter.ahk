@@ -11,11 +11,13 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
-global g_numTasks := 15
+global g_numTasks := 16
 
 global g_sleep := 100
 
 global g_stop := 0
+
+global g_total_loops := 3
 
 WinActivate Vikings: War
 
@@ -30,6 +32,25 @@ Return
 Escape::
 {
 	g_stop := 1
+	g_sleep := 100
+	g_numTasks := 16
+}
+Return
+
+#IfWinActive, (MEmu1)
+^Escape::
+{
+	ExitApp
+}
+Return
+
+#IfWinActive, (MEmu1)
+Escape::
+{
+	g_stop := 1
+	g_sleep := 100
+	g_numTasks := 16
+	g_total_loops := 3
 }
 Return
 
@@ -73,7 +94,21 @@ FindImageAndClick(img)
 ^t::
 {
 	g_stop := 0
-	LoopCompleteAllTask()
+	LoopCompleteAllTask(False)
+}
+Return
+
+#IfWinActive, (MEmu1)
+^m::
+{
+	g_stop := 0
+	g_sleep := 50
+	g_numTasks := 25
+	g_total_loops := 5
+	LoopCompleteAllTask(True)
+	g_sleep := 100
+	g_numTasks := 16
+	g_total_loops := 3
 }
 Return
 
@@ -102,18 +137,21 @@ Return
 }
 Return
 
-LoopCompleteAllTask() {	
+LoopCompleteAllTask(mobile) {	
 	local loopCnt := 0
 	loop {
-		OpenTasks()
-		CompleteAllTask()
+		if(mobile == False) {
+			OpenTasks()
+		}
+		
+		CompleteAllTask(mobile)
 		loopCnt := loopCnt + 1
 		
 		if (g_stop = 1) {
 			Break
 		}
 
-		if (loopCnt >= 3) {
+		if (loopCnt >= g_total_loops) {
 			Break
 		}		
 	}
@@ -156,7 +194,7 @@ LoopCompleteAllClanTask() {
 			Break
 		}
 
-		if (loopCnt >= 3) {
+		if (loopCnt >= g_total_loops) {
 			Break
 		}		
 	}	
@@ -198,17 +236,56 @@ CompleteAllPremiumTask() {
 	}
 }
 
-CompleteAllTask() {	
+CompleteAllTask(mobile := False) {	
 	if (g_stop = 0){
 		; WinActivate Vikings: War
+		zeroCount := 0	
+		
 		Loop
 		{
 			MouseMove 200, 100, %g_sleep%
 			ActionCount := 0	
 			
-			ActionCount := ActionCount + FindImageAndClick("apply")				
-			ActionCount := ActionCount + FindImageAndClick("apply")	
-			ActionCount := ActionCount + CompleteTask()
+			if( mobile == False ) {
+				action := "apply"
+			} else {
+				action := "apply-mobile"
+			}
+
+			result := 0
+			result := FindImageAndClick( action )
+			ActionCount := ActionCount + result
+			if( result == 0) {
+				zeroCount := zeroCount + 1
+			}
+			
+			
+			if( mobile == False ) {
+				result := 0
+				result := FindImageAndClick( action )
+				ActionCount := ActionCount + result
+				if( result == 0) {
+					zeroCount := zeroCount + 1
+				}
+			}
+
+			result := 0
+			result := FindImageAndClick( "claim-all-mobile" )
+			ActionCount := ActionCount + result
+			if( result == 0) {
+				zeroCount := zeroCount + 1
+			}				
+			
+			if( mobile == False ) {
+				result := 0
+				result := FindImageAndClick( "claim-all-mobile" )
+				ActionCount := ActionCount + result
+				if( result == 0) {
+					zeroCount := zeroCount + 1
+				}
+			}
+			
+			ActionCount := ActionCount + CompleteTask(mobile)
 
 			if (ActionCount = 0){
 				break
@@ -217,21 +294,49 @@ CompleteAllTask() {
 			if ( g_stop = 1){
 				break
 			}
+			
+			if(zeroCount > 6) {
+				;break			
+			}
 		}
 	}
 }
 
-CompleteTask() {	
+CompleteTask(mobile := False) {	
 	ActionCount := 0
 	if (g_stop = 0){
+			if( mobile == False ) {
+				start := "start"
+				claim := "claim"
+			} else {
+				start := "start-mobile"
+				claim := "claim-mobile"
+			}
+		
+		zeroCount :=  0
 		Loop, %g_numTasks%
 		{
-			ActionCount := ActionCount + FindImageAndClick("start")
-			ActionCount := ActionCount + FindImageAndClick("claim")
+			result := 0
+			result := FindImageAndClick( start )
+			ActionCount := ActionCount + result
+			if( result == 0) {
+				zeroCount := zeroCount + 1
+			}
+				
+			result := 0
+			result := FindImageAndClick( claim )
+			ActionCount := ActionCount + result
+			if( result == 0) {
+				zeroCount := zeroCount + 1
+			}
 
 			if (g_stop = 1){
 				break
 			}
+			
+			if (zeroCount > 6){
+				;break
+			}			
 		}	
 	}
 
